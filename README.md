@@ -104,7 +104,8 @@ its return values is used by setup\_analysis\_directory\_structure() that is
 calling charon to check registered samples. One point of the organizing step is
 that after demultiplexing we have a Project -> Sample -> FASTQ file structure
 and we want to have a Project -> Sample -> Libprep -> Run -> FASTQ hierarchy
-instead. To find out the libprep/run relationship we have to go to charon. The
+instead - this is done with softlinks in the ARCHIVE directory (INCOMING an
+irma). To find out the libprep/run relationship we have to go to charon. The
 SampleSheet.csv in practice contains this information (Uppsala pipeline lives
 without charon), but for Stockholm at the beginning charon is updated from LIMS
 with this information.  When sequencing ends, TACA starts demultiplexing, and
@@ -134,6 +135,35 @@ table happens in this function.
 
 Additional quirk is that the pipeline starts launcing the QC step first *by
 default* . To avoid this it is adviced to add the no\_qc command line parameter
-(see also the launch\_analysis() part before)
+(see also the launch\_analysis() part before).
+
+Generally it is the conductor class that decides when to run what (just like in
+an orchestra) and we are pulling the best practice method from charon. To
+change the best practice part, use the code (using your project ID):
+
+    from ngi_pipeline.database.classes import CharonSession, CharonError
+    cs = CharonSession()
+    cs.project_update("P876",best_practice_analysis="hello_engine")
+
+
+organizing is via softlinks to the ARCHIVE (INCOMING on irma)
+
+ * in the config file have a test entry in the analysis section
+ * ngi\_pipeline/engines/test module that contains analyzis() and the update part
+ * an entry in charon in sync with the engine name that is in the config
+ * have a look at whole\_genome\_reseq in conductor.launchers.launch\_analysis.()
+
+Now if we want to have test engine, its config in the NGI\_CONFIG yaml file
+should be like:
+
+    analysis:
+        workflows:
+            best_practice_analysis:
+                whole_genome_reseq:
+                    analysis_engine: ngi_pipeline.engines.piper_ngi
+                qc:
+                    analysis_engine: ngi_pipeline.engines.qc_ngi
+                hello_engine:
+                    analysis_engine: ngi_pipeline.engines.hello-ngi-engine
 
 

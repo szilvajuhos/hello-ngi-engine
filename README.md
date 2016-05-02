@@ -166,4 +166,16 @@ should be like:
                 hello_engine:
                     analysis_engine: ngi_pipeline.engines.hello-ngi-engine
 
+Now, after setting up the fake flowcell and organizing it, you can run something like:
 
+    (NGI)szilva@galatea /szilvaproj/a2014205/nobackup/NGI/analysis_ready $ python ~/dev/ngi_pipeline/scripts/ngi_pipeline_start.py analyze project /szilvaproj/a2014205/nobackup/NGI/analysis_ready/DATA/P697 --no-qc
+    2016-05-02 16:00:47,644 - ngi_pipeline.utils.filesystem - INFO - Setting up project "P697"
+    2016-05-02 16:00:47,644 - ngi_pipeline.utils.filesystem - INFO - Setting up sample "P697_004"
+    2016-05-02 16:00:47,644 - ngi_pipeline.utils.filesystem - INFO - Setting up libprep "A"
+    2016-05-02 16:00:47,645 - ngi_pipeline.utils.filesystem - INFO - Setting up seqrun "908254_ST-E00205_2662_BBZZHATCXX"
+    2016-05-02 16:00:47,645 - ngi_pipeline.utils.filesystem - INFO - Adding fastq file "P697_004_S4_L004_R1_001.fastq.gz" to seqrun "908254_ST-E00205_2662_BBZZHATCXX"
+    2016-05-02 16:00:47,645 - ngi_pipeline.utils.filesystem - INFO - Adding fastq file "P697_004_S4_L004_R2_001.fastq.gz" to seqrun "908254_ST-E00205_2662_BBZZHATCXX"
+    2016-05-02 16:00:47,645 - ngi_pipeline.utils.filesystem - INFO - Setting up sample "P697_008"
+    [...]
+    2016-05-02 16:00:47,749 - ngi_pipeline.engines.hello-ngi-engine.local_process_tracking - INFO - Updating Charon with local job status - not really, it is only a log message
+    2016-05-02 16:00:47,824 - ngi_pipeline.conductor.launchers - INFO - Attempting to launch sample analysis for project "S.Juhos_16_01" / sample "P697_007" / engine"ngi_pipeline.engines.hello-ngi-engine"

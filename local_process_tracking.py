@@ -8,5 +8,6 @@ def update_charon_with_local_jobs_status(quiet=False, config=None, config_file_p
     """Check the status of all locally-tracked jobs and update Charon accordingly.
     """
     LOG.info("Updating Charon with local job status - not really, it is only a log message")
+    # add trace tracking path somehow
     return True
 

@@ -179,3 +179,4 @@ Now, after setting up the fake flowcell and organizing it, you can run something
     [...]
     2016-05-02 16:00:47,749 - ngi_pipeline.engines.hello-ngi-engine.local_process_tracking - INFO - Updating Charon with local job status - not really, it is only a log message
     2016-05-02 16:00:47,824 - ngi_pipeline.conductor.launchers - INFO - Attempting to launch sample analysis for project "S.Juhos_16_01" / sample "P697_007" / engine"ngi_pipeline.engines.hello-ngi-engine"
+    

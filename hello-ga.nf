@@ -46,9 +46,8 @@ if( !reads2.exists() ) exit 2, "Missing read ${params.reads2}"
 // different compartments
 process mapping_bwa {
 
-	//module 'bioinfo-tools'
-	//module 'bwa'
-	//module 'samtools/1.3'
+	module 'bwa'
+	module 'samtools'
 
 	cpus 4
 

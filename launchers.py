@@ -1,4 +1,5 @@
 from __future__ import print_function
+from .local_process_tracking import update_charon_with_local_jobs_status
 
 import collections
 import glob
@@ -71,15 +72,21 @@ def analyze(project, sample,
     # To launch  demo for each sample we are traversing the project object to collect all the fastq pairs
     #
     fastq_pairs = get_sample_fastq_pairs(sample,dir_prefix)
+    # 
+    # notify charon about the project start
+    #
     cs = CharonSession()
-    #cs.project_update(args.project_id,best_practice_analysis="hello_engine")
+    # we are storing individual run traces in the trace file
+    trace_file = config['database']['trace_tracking_path'] + str(project) + "_"+str(sample)
+    LOG.info("Writing trace to "+trace_file)
+    cs.project_update(project.project_id, best_practice_analysis="hello_engine")
     # the subprocess modules picks up stdout and stderr as well 
     # as a test run: 
     # output = subprocess.check_output(["ls", "-l",fastq_pairs[0]])
     # 
-    trace_file = "/home/szilva/dev/hello-ngi-engine/hello.trace_" + str(project) + "_"+str(sample)
+    # TODO: get rid of hard-coded stuff, and use config values
     output = subprocess.check_output(["/home/szilva/dev/hello-ngi-engine/nextflow", "run", "/home/szilva/dev/hello-ngi-engine/hello-ga.nf","--reads1",fastq_pairs[0],"--reads2",fastq_pairs[1],"-with-trace",trace_file,"--refbase","/home/szilva/dev/hello-ngi-engine/a2014205/reference/"])
-    LOG.info("The output is:" + output)
+    update_charon_with_local_jobs_status(config=config, trace=trace_file)
     LOG.info("Done - bye")
     return 0
 

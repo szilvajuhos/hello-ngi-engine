@@ -63,13 +63,15 @@ its ID (not by its name):
 
     python NGI_pipeline_test.py delete --project-id P836
 
-To make sure the file format is in line with the usual Illumina format, we are
-expecting read file format being something like
-{}\_S{}\_L00{}\_R1\_001.fastq.gz . The working mode of NGI pipeline that it
-picking up files from the pre-prepared flowcell. After demultiplexing we want
-to have different folders for each project and subfolders for each sample.
-Organizing the flowcell happens by the parse\_flowcell() function in
-ngi\_pipeline/conductor/flowcell.py that is expecting a directory name. 
+Formating is important! Make sure you are naming your project as J.Doe\_16\_01
+(and not J.Doe\_2\_3 or J.Doe\12.3 etc). Furthermore, the file format is in line
+with the usual Illumina format, we are expecting the read file being
+something like {}\_S{}\_L00{}\_R1\_001.fastq.gz . The working mode of NGI
+pipeline that it picking up files from the pre-prepared flowcell. After
+demultiplexing we want to have different folders for each project and
+subfolders for each sample.  Organizing the flowcell happens by the
+parse\_flowcell() function in ngi\_pipeline/conductor/flowcell.py that is
+expecting a directory name. 
 
 After generating the flowcell from the test fake data we are getting a
 directory that can be organized. Note, the *a2014205* directory is there

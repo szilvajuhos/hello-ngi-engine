@@ -64,8 +64,8 @@ def analyze(project, sample,
             for sr in project.samples[s].libpreps[l].seqruns.keys():
                 for fq in project.samples[s].libpreps[l].seqruns[sr].fastq_files:
                     sample_names.append( s + "/" + l + "/" + sr + "/"+fq+" " )
-    for sns in sample_names:
-        LOG.info("Sample: " + dir_prefix + sns)
+    # for sns in sample_names:
+    #    LOG.info("Sample: " + dir_prefix + sns)
     # end of demo log code
     #
     # To launch  demo for each sample we are traversing the project object to collect all the fastq pairs
@@ -73,11 +73,12 @@ def analyze(project, sample,
     fastq_pairs = get_sample_fastq_pairs(sample,dir_prefix)
     cs = CharonSession()
     #cs.project_update(args.project_id,best_practice_analysis="hello_engine")
-    # it is actually picking up stdout and stderr as well 
-    #output = subprocess.check_output(["ls", "-l",fastq_pairs[0]])
-    output = subprocess.check_output(["/home/szilva/dev/hello-ngi-engine/nextflow", "run", "/home/szilva/dev/hello-ngi-engine/hello-ga.nf","--reads1",fastq_pairs[0],"--reads2",fastq_pairs[1],"-with-trace","/home/szilva/dev/hello-ngi-engine/hello.trace","--refbase","/home/szilva/dev/hello-ngi-engine/a2014205/reference/"])
-    import pdb
-    pdb.set_trace()
+    # the subprocess modules picks up stdout and stderr as well 
+    # as a test run: 
+    # output = subprocess.check_output(["ls", "-l",fastq_pairs[0]])
+    # 
+    trace_file = "/home/szilva/dev/hello-ngi-engine/hello.trace_" + str(project) + "_"+str(sample)
+    output = subprocess.check_output(["/home/szilva/dev/hello-ngi-engine/nextflow", "run", "/home/szilva/dev/hello-ngi-engine/hello-ga.nf","--reads1",fastq_pairs[0],"--reads2",fastq_pairs[1],"-with-trace",trace_file,"--refbase","/home/szilva/dev/hello-ngi-engine/a2014205/reference/"])
     LOG.info("The output is:" + output)
     LOG.info("Done - bye")
     return 0
@@ -90,8 +91,6 @@ def get_sample_fastq_pairs(sample,prefix):
         Note, it is the R2 that comes first in the original class structure, we are 
         returning with the filenames in the correct order.
     '''
-#    import pdb
-#    pdb.set_trace()
     lp = sample.libpreps.keys()[0]              # assuming a single libprep
     sr = sample.libpreps[lp].seqruns.keys()[0]  # ditto a single run
     sample_prefix = prefix + str(sample) + "/" + str(lp) + "/" + sr + "/"   # concatenate with directory prefix

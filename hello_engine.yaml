@@ -1,0 +1,13 @@
+# to be put under analysis:best_practice_analysis: 
+        hello_engine:
+            analysis_engine: ngi_pipeline.engines.hello-ngi-engine
+
+# to be put under the database: entry (it is nonsense to give a general name something like "database" - it is not a database at all)
+
+    #
+    # if we are using nextflow, we are not storing state in a SQL file, but NF stores it in a trace file anyway
+    # you only have to launch it like:
+    # nextflow run myscript.nf -with-trace /path/to/my/trace.txt
+    #
+    trace_tracking_path: /path/to/your/tracking/trace_tracking.txt
+

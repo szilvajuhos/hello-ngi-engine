@@ -71,6 +71,8 @@ process mapping_bwa {
 
 process do_variant_call {
 
+	module 'samtools'
+
 	cpus 1
 	
 	input:

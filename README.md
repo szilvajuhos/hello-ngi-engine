@@ -10,13 +10,16 @@ larger engine. Prerequisites:
 - access to charon-dev
 - sample sheet and flowcell prepared
 
-#### Installing NextFlow:
+#### __Installing NextFlow:__
 
 Generally it is something like described on the NextFlow web page above.  The
 only thing to consider is that put nextflow to a place where it is in your path
-so the pipeline can be launched.
+so the pipeline can be launched. 
+On UPPMAX machines there should be a Nextflow module already, so get it by simply
 
-#### Installing NGI pipeline:
+    $ module load Nextflow
+
+#### __Installing NGI pipeline:__
 
 You will need conda, for its quick installation see
 http://conda.pydata.org/docs/install/quick.html . After that go with the
@@ -30,15 +33,16 @@ installation as:
 After going through all these steps, copy the "test\_ngi\_config.yaml" with a
 new name (will be my\_setup.yaml in this sample), and edit it. There are
 compulsory entries to be set, i.e.  the mail address should be your own
-address, and the directories have to be set correctly. Make sure you are not
-overwriting production data.
+address, and the directories have to be set correctly. Do not overwrite
+production data. Also see later some entries in hello\_engine.yaml you have to
+add to your yaml file.
 
-    Once ready, define your NGI_CONFIG variable (preferably in your shell
-    profile, i.e. .bashrc):
+Once ready, define your NGI\_CONFIG variable (preferably in your shell
+profile, i.e. .bashrc):
 
     export NGI_CONFIG=/path/to/my/ngi_pipeline/my\_setup.py
 
-#### Access to charon-dev:
+#### __Access to charon-dev:__
 
 You have to ask the charon admin to provide a CHARON\_API\_TOKEN for you. As
 charon-dev is replicated weekly from the production charon, make sure you have
@@ -46,10 +50,10 @@ the account and token present in the production version of charon, or you have
 to generate a new token after replication again. Once the token is ready, set
 the environment variables in your .bashrc or shell profile like:
 
-    export CHARON_API_TOKEN= YOUR_TOKEN
+    export CHARON_API_TOKEN=YOUR_TOKEN
     export CHARON_BASE_URL=http://charon.scilifelab.se/
 
-#### Sample sheet and flowcell prepared:
+#### __Sample sheet and flowcell prepared:__
 
 There is a script generating a flowcell structure in
 scripts/NGI\_pipeline\_test.py. Using this you have to define a pair of FASTQs,
@@ -63,12 +67,12 @@ its ID (not by its name):
 
     python NGI_pipeline_test.py delete --project-id P836
 
-Formating is important! Make sure you are naming your project as J.Doe\_16\_01
+Formatting is important! Make sure you are naming your project as J.Doe\_16\_01
 (and not J.Doe\_2\_3 or J.Doe\12.3 etc). Furthermore, the file format is in line
 with the usual Illumina format, we are expecting the read file being
-something like {}\_S{}\_L00{}\_R1\_001.fastq.gz . The working mode of NGI
-pipeline that it picking up files from the pre-prepared flowcell. After
-demultiplexing we want to have different folders for each project and
+something like {sample}\_S{index}\_L00{lane}\_R[12]\_001.fastq.gz . The working
+mode of NGI pipeline is that it is picking up files from the pre-prepared flowcell.
+After demultiplexing we want to have different folders for each project and
 subfolders for each sample.  Organizing the flowcell happens by the
 parse\_flowcell() function in ngi\_pipeline/conductor/flowcell.py that is
 expecting a directory name. 
@@ -93,13 +97,26 @@ flowcell path. I do not know the rationale behind this right now.
     -rw-rw-r-- 1 szilva szilva 2527596 mar 16 18:32 test_S001_L001_R1_001.fastq.gz
     -rw-rw-r-- 1 szilva szilva 2558400 mar 16 18:32 test_S001_L001_R2_001.fastq.gz
 
-#### Things to consider before implementing a new engine:
+#### __Running NGI pipeline__
 
-The SampleSheet.csv is not used, it is only a placeholder though its existence
-is checked and an exception/exit is generated if missing. The organizing
-function is using the project folder structure made by demultiplexer. In
-general this "organize" step could be left out but right now there is little
-trust from the users to procees without this. 
+Now we are at the stage when we can run the pipeline. First we have to organize
+(there will be a new random flowcell ID generated, do not use this):
+
+    python $PATH_TO_NGI/scripts/ngi_pipeline_start.py organize flowcell $PATH_TO_FLOWCELL/224721_ST-E00202_8606_ARENQBHBXX
+
+If you get a healthy "Done with organization" message, you have files and
+symlinks in your \$top\_dir directory. Also the log file defined in the
+"logging:" section of the setup yaml file contains entries referring to the
+successful organization. Next step is to run the process without the QC step
+(it is something we have to later refactor in NGI pipeline):
+
+    python ${PATH_TO_NGI}/scripts/ngi_pipeline_start.py analyze flowcell ${PATH_TO_FLOWCELL}/224721_ST-E00202_8606_ARENQBHBXX --no-qc
+
+The pipeline starts launcing the QC step first *by default* . To avoid this it
+is adviced to add the --no-qc command line parameter (see also the
+launch\_analysis() part before).
+
+#### __Things to consider before implementing a new engine:__
 
 The parse\_flowcell() function is only generating a directory data object, and
 its return values is used by setup\_analysis\_directory\_structure() that is
@@ -111,15 +128,32 @@ irma). To find out the libprep/run relationship we have to go to charon. The
 SampleSheet.csv in practice contains this information (Uppsala pipeline lives
 without charon), but for Stockholm at the beginning charon is updated from LIMS
 with this information.  When sequencing ends, TACA starts demultiplexing, and
-moves data to nestor. When file transfer is ready, and data is on nestor, the
-organize/analyze step should start automatically but now it is done manually. 
+moves data to nestor (TODO well, no, have to ask Isak/Francesco/Per what is the
+case now). When file transfer is ready, and data is on
+(includecorrectplacehere), the organize/analyze step should start automatically
+but now it is done manually (dunno whether it is the case still). 
 
 After launching the analysis, charon is called again to decide what pipeline to
 use (see the get\_engine\_bp() function in
 ngi\_pipeline/conductor/launchers.py). Right now we mostly use
 *whole\_genome\_reseq* that is using piper as a workflow engine.  In the config
 yaml file you can define these values in theory in the analysis:workflows
-entries, so their role is not really clear for me.
+entries, so their role is not really clear for me. 
+As for the hello engine we are using "hello\_engine" instead of the whole
+genome reseq part. Now it have to be edited manually, go to your project on
+charon-dev, and edit manualy the "Best-practice analysis" item to
+"hello\_engine". Also, see the changes you have to give to your yaml config in
+hello\_engine.yaml (see an example below) .
+
+*Alternative method to change best practice analysis:*
+
+Generally it is the conductor class that decides when to run what (just like in
+an orchestra) and we are pulling the best practice method from charon. To
+change the best practice part, use the code (using your project ID):
+
+    from ngi_pipeline.database.classes import CharonSession, CharonError
+    cs = CharonSession()
+    cs.project_update("P876",best_practice_analysis="hello_engine")
 
 As the engines are independent of the pipeline framework, the only thing that
 is started by ngi\_pipeline is the analyse() function in your engine module.
@@ -131,29 +165,29 @@ ngi\_pipeline/conductor/launchers.py) :
  * local\_process\_tracking.update\_charon\_with\_local\_jobs\_status()
 
 The latter process in needed to keep track the status of the processing
-workflow. It is generally stored in a local SQL database since the connection
+workflow. Using piper it is stored in a local SQL database since the connection
 to charon is unstable. Synchronization between charon and this local sqlite3
-table happens in this function. 
+table happens in this function. Do not be fooled: the implementation of piper
+allows only checking for launch and finish, nothing is known about the ongoing
+status. Nextflow can have a trace file, with actual running statuses about
+processes. It is what is stored in the database:trace\_tracking\_prefix, and you
+have to parametrize nextflow as 
 
-Additional quirk is that the pipeline starts launcing the QC step first *by
-default* . To avoid this it is adviced to add the no\_qc command line parameter
-(see also the launch\_analysis() part before).
+    nextflow run myscript.nf --sample this_and_that -with-trace /there/it/goes/tracefile.txt
 
-Generally it is the conductor class that decides when to run what (just like in
-an orchestra) and we are pulling the best practice method from charon. To
-change the best practice part, use the code (using your project ID):
+As we have different flows for each sample, the prefix of this tracefile is
+defined in the yaml file, and you will get trace file to process as
+trace\_tracking\_J.Doe\_16\_06\_P123\_001
 
-    from ngi_pipeline.database.classes import CharonSession, CharonError
-    cs = CharonSession()
-    cs.project_update("P876",best_practice_analysis="hello_engine")
+### __Random unorganized notes__
 
+The SampleSheet.csv is not used, it is only a placeholder though its existence
+is checked and an exception/exit is generated if missing. The organizing
+function is using the project folder structure made by demultiplexer. In
+general this "organize" step could be left out but right now there is little
+trust from the users to procees without this. 
 
 organizing is via softlinks to the ARCHIVE (INCOMING on irma)
-
- * in the config file have a test entry in the analysis section
- * ngi\_pipeline/engines/test module that contains analyzis() and the update part
- * an entry in charon in sync with the engine name that is in the config
- * have a look at whole\_genome\_reseq in conductor.launchers.launch\_analysis.()
 
 Now if we want to have test engine, its config in the NGI\_CONFIG yaml file
 should be like:
@@ -168,17 +202,3 @@ should be like:
                 hello_engine:
                     analysis_engine: ngi_pipeline.engines.hello-ngi-engine
 
-Now, after setting up the fake flowcell and organizing it, you can run something like:
-
-    (NGI)szilva@galatea /szilvaproj/a2014205/nobackup/NGI/analysis_ready $ python ~/dev/ngi_pipeline/scripts/ngi_pipeline_start.py analyze project /szilvaproj/a2014205/nobackup/NGI/analysis_ready/DATA/P697 --no-qc
-    2016-05-02 16:00:47,644 - ngi_pipeline.utils.filesystem - INFO - Setting up project "P697"
-    2016-05-02 16:00:47,644 - ngi_pipeline.utils.filesystem - INFO - Setting up sample "P697_004"
-    2016-05-02 16:00:47,644 - ngi_pipeline.utils.filesystem - INFO - Setting up libprep "A"
-    2016-05-02 16:00:47,645 - ngi_pipeline.utils.filesystem - INFO - Setting up seqrun "908254_ST-E00205_2662_BBZZHATCXX"
-    2016-05-02 16:00:47,645 - ngi_pipeline.utils.filesystem - INFO - Adding fastq file "P697_004_S4_L004_R1_001.fastq.gz" to seqrun "908254_ST-E00205_2662_BBZZHATCXX"
-    2016-05-02 16:00:47,645 - ngi_pipeline.utils.filesystem - INFO - Adding fastq file "P697_004_S4_L004_R2_001.fastq.gz" to seqrun "908254_ST-E00205_2662_BBZZHATCXX"
-    2016-05-02 16:00:47,645 - ngi_pipeline.utils.filesystem - INFO - Setting up sample "P697_008"
-    [...]
-    2016-05-02 16:00:47,749 - ngi_pipeline.engines.hello-ngi-engine.local_process_tracking - INFO - Updating Charon with local job status - not really, it is only a log message
-    2016-05-02 16:00:47,824 - ngi_pipeline.conductor.launchers - INFO - Attempting to launch sample analysis for project "S.Juhos_16_01" / sample "P697_007" / engine"ngi_pipeline.engines.hello-ngi-engine"
-    

@@ -77,7 +77,7 @@ def analyze(project, sample,
     #
     cs = CharonSession()
     # we are storing individual run traces in the trace file
-    trace_file = config['database']['trace_tracking_path'] + str(project) + "_"+str(sample)
+    trace_file = config['database']['trace_tracking_prefix'] + str(project) + "_"+str(sample)
     LOG.info("Writing trace to "+trace_file)
     cs.project_update(project.project_id, best_practice_analysis="hello_engine")
     # the subprocess modules picks up stdout and stderr as well 

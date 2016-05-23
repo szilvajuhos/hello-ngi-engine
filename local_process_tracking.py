@@ -41,10 +41,3 @@ def parse_NF_trace_file(aTraceFile):
             except ValueError:
                 LOG.info("Something went amiss.")
                 return "FAILED"
-
-
-
-            
-
-
- 

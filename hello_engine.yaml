@@ -9,5 +9,7 @@
     # you only have to launch it like:
     # nextflow run myscript.nf -with-trace /path/to/my/trace.txt
     #
-    trace_tracking_path: /path/to/your/tracking/trace_tracking.txt
-
+    # it is only a prefix, the actual project/sample information will be appended, so it will look like 
+    # trace_tracking_J.Doe_16_09_P274_002
+    #
+    trace_tracking_prefix: /home/szilva/sr/a2014205/trace_tracking_

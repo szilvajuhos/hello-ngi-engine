@@ -97,6 +97,15 @@ flowcell path. I do not know the rationale behind this right now.
     -rw-rw-r-- 1 szilva szilva 2527596 mar 16 18:32 test_S001_L001_R1_001.fastq.gz
     -rw-rw-r-- 1 szilva szilva 2558400 mar 16 18:32 test_S001_L001_R2_001.fastq.gz
 
+#### __Editing Charon-dev to pick up the hello engine __
+
+Go to the http://charon-dev.scilifelab.se URL, and edit the entry referring to your project. 
+ * click on the project ID (it is P421 in this example above)
+ * click on Edit on the right side
+ * edit the Best-practice analysis part from "whole\_genome\_reseq" to "hello\_engine"
+ * click Save
+
+
 #### __Running NGI pipeline__
 
 Now we are at the stage when we can run the pipeline. First we have to organize

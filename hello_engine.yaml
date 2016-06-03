@@ -2,14 +2,26 @@
         hello_engine:
             analysis_engine: ngi_pipeline.engines.hello-ngi-engine
 
-# to be put under the database: entry (it is nonsense to give a general name something like "database" - it is not a database at all)
-
+#
+# all general directives regarding this engine goes here, so you can access values at config['hello_engine']:
+# 
+hello_engine:
+    load_modules:
+        - bioinfo-tools
+        - Nextflow
+    workflow:
+        /home/szilva/dev/hello-ngi-engine/hello-ga.nf
+    refbase:
+        /home/szilva/dev/hello-ngi-engine/a2014205/reference/        
     #
     # if we are using nextflow, we are not storing state in a SQL file, but NF stores it in a trace file anyway
     # you only have to launch it like:
     # nextflow run myscript.nf -with-trace /path/to/my/trace.txt
-    #
+    # 
     # it is only a prefix, the actual project/sample information will be appended, so it will look like 
-    # trace_tracking_J.Doe_16_09_P274_002
+    # trace_tracking_J.Doe_16_09_P274_002 TODO: finish tracing implementation
     #
     trace_tracking_prefix: /home/szilva/sr/a2014205/trace_tracking_
+
+
+

@@ -76,17 +76,22 @@ def analyze(project, sample,
     # notify charon about the project start
     #
     cs = CharonSession()
+    # TODO: finish trace information
     # we are storing individual run traces in the trace file
-    trace_file = config['database']['trace_tracking_prefix'] + str(project) + "_"+str(sample)
-    LOG.info("Writing trace to "+trace_file)
+    #trace_file = config['database']['trace_tracking_prefix'] + str(project) + "_"+str(sample)
+    #LOG.info("Writing trace to "+trace_file)
     cs.project_update(project.project_id, best_practice_analysis="hello_engine")
+    #
     # the subprocess modules picks up stdout and stderr as well 
-    # as a test run: 
-    # output = subprocess.check_output(["ls", "-l",fastq_pairs[0]])
     # 
-    # TODO: get rid of hard-coded stuff, and use config values
-    output = subprocess.check_output(["/home/szilva/dev/hello-ngi-engine/nextflow", "run", "/home/szilva/dev/hello-ngi-engine/hello-ga.nf","--reads1",fastq_pairs[0],"--reads2",fastq_pairs[1],"-with-trace",trace_file,"--refbase","/home/szilva/dev/hello-ngi-engine/a2014205/reference/"])
-    update_charon_with_local_jobs_status(config=config, trace=trace_file)
+    referenceDir = config['hello_engine']['refbase']
+    workflow = config['hello_engine']['workflow']
+    try:
+        output = subprocess.check_output(["nextflow", "run", workflow,"--reads1",fastq_pairs[0],"--reads2",fastq_pairs[1],"--refbase",referenceDir ])
+        LOG.info(output)
+    except OSError as oe:
+        LOG.info(oe)
+    update_charon_with_local_jobs_status(config=config)
     LOG.info("Done - bye")
     return 0
 

@@ -47,7 +47,7 @@ if( !reads2.exists() ) exit 2, "Missing read ${params.reads2}"
 process mapping_bwa {
 
 	module 'bwa'
-	module 'samtools'
+	module 'samtools/1.3'
 
 	cpus 4
 

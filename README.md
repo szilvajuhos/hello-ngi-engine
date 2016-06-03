@@ -58,14 +58,15 @@ the environment variables in your .bashrc or shell profile like:
 There is a script generating a flowcell structure in
 scripts/NGI\_pipeline\_test.py. Using this you have to define a pair of FASTQs,
 and it is building all the directory structure and stuff mimicking the
-demultiplexed directory structure of NGI production. Its usage:
+demultiplexed directory structure of NGI production. Before starting, source the
+NGI conda environment. Its usage:
 
-    python NGI_pipeline_test.py create  --project-name J.Doe_16_01 --symlinks --FC 1 --fastq1 test_S001_L001_R1_001.fastq.gz --fastq2 test_S001_L001_R2_001.fastq.gz
+    (NGI)$ python NGI_pipeline_test.py create  --project-name J.Doe_16_01 --symlinks --FC 1 --fastq1 test_S001_L001_R1_001.fastq.gz --fastq2 test_S001_L001_R2_001.fastq.gz
 
 If you are not satisfied with a test project for some reason, delete it using
 its ID (not by its name):
 
-    python NGI_pipeline_test.py delete --project-id P836
+    (NGI)$ python NGI_pipeline_test.py delete --project-id P836
 
 Formatting is important! Make sure you are naming your project as J.Doe\_16\_01
 (and not J.Doe\_2\_3 or J.Doe\12.3 etc). Furthermore, the file format is in line
@@ -82,7 +83,7 @@ directory that can be organized. Note, the *a2014205* directory is there
 because ngi\_pipeline expects this directory name to be somewhere in the
 flowcell path. I do not know the rationale behind this right now.
 
-    szilva@galatea ~/dev/hello-ga-engine/a2014205/data $ python ~/dev/ngi_pipeline/scripts/NGI_pipeline_test.py create  --project-name S.Juhos_16_02 --symlinks --FC 1 --fastq1 test_S001_L001_R1_001.fastq.gz --fastq2 test_S001_L001_R2_001.fastq.gz
+    (NGI)szilva@milou-b ~/dev/hello-ga-engine/a2014205/data $ python ~/dev/ngi_pipeline/scripts/NGI_pipeline_test.py create  --project-name S.Juhos_16_02 --symlinks --FC 1 --fastq1 /full/path/to/test_S001_L001_R1_001.fastq.gz --fastq2 /full/path/to/test_S001_L001_R2_001.fastq.gz
     producing FC: 677817_ST-E00205_2645_BZAIURALXX
     updaiting charon-dev
     now run the following:
@@ -97,7 +98,9 @@ flowcell path. I do not know the rationale behind this right now.
     -rw-rw-r-- 1 szilva szilva 2527596 mar 16 18:32 test_S001_L001_R1_001.fastq.gz
     -rw-rw-r-- 1 szilva szilva 2558400 mar 16 18:32 test_S001_L001_R2_001.fastq.gz
 
-#### __Editing Charon-dev to pick up the hello engine __
+You have to use full path, as the script is expecting in this form.
+
+#### __Editing Charon-dev to pick up the hello engine__
 
 Go to the http://charon-dev.scilifelab.se URL, and edit the entry referring to your project. 
  * click on the project ID (it is P421 in this example above)
@@ -105,8 +108,46 @@ Go to the http://charon-dev.scilifelab.se URL, and edit the entry referring to y
  * edit the Best-practice analysis part from "whole\_genome\_reseq" to "hello\_engine"
  * click Save
 
+*Alternative method to change best practice analysis:*
+
+Generally it is the conductor class that decides when to run what (just like in
+an orchestra) and we are pulling the best practice method from charon. To
+change the best practice part, use the code (using your project ID):
+
+    from ngi_pipeline.database.classes import CharonSession, CharonError
+    cs = CharonSession()
+    cs.project_update("P876",best_practice_analysis="hello_engine")
+
+
 
 #### __Running NGI pipeline__
+
+Engines used by NGI pipeline are usually residing in the
+ngi\_pipeline/ngi\_pipeline/engines directory. In the yaml config file we are
+referring to them in the "analysis" session, so if we have:
+
+    hello_engine:
+        analysis_engine: ngi_pipeline.engines.hello-ngi-engine
+
+It is expected that the hello engine files are in
+ngi\_pipeline/ngi\_pipeline/engines/hello-ngi-engine . Make a symlink (or copy
+the files there):
+
+    ln -s /path/to/hello-ngi-engine /path/to/ngi_pipeline/ngi_pipeline/engines/hello-ngi-engine
+
+We have to provide a path to the reference and other environment variables (see
+code in launchers\.py and the analyze() function when calling the nextflow
+subprocess). It can be done by any YAML directive, we are doing it by adding:
+
+    hello_engine:
+        load_modules:
+            - bioinfo-tools
+            - Nextflow
+        workflow: /path/to/your/hello-ngi-engine/hello-ga.nf
+        refbase: /path/to/your/hello-ngi-engine/a2014205/reference/        
+        trace_tracking_prefix: /home/szilva/sr/a2014205/trace_tracking_
+
+To the NGI\_CONFIG file. The refbase contains a simple fake BWA index and reference for testing.
 
 Now we are at the stage when we can run the pipeline. First we have to organize
 (there will be a new random flowcell ID generated, do not use this):
@@ -120,6 +161,10 @@ successful organization. Next step is to run the process without the QC step
 (it is something we have to later refactor in NGI pipeline):
 
     python ${PATH_TO_NGI}/scripts/ngi_pipeline_start.py analyze flowcell ${PATH_TO_FLOWCELL}/224721_ST-E00202_8606_ARENQBHBXX --no-qc
+
+or 
+
+    python ${PATH_TO_NGI}/scripts/ngi_pipeline_start.py analyze project ${topdir}/DATA/P421/ --no-qc
 
 The pipeline starts launcing the QC step first *by default* . To avoid this it
 is adviced to add the --no-qc command line parameter (see also the
@@ -148,22 +193,12 @@ ngi\_pipeline/conductor/launchers.py). Right now we mostly use
 *whole\_genome\_reseq* that is using piper as a workflow engine.  In the config
 yaml file you can define these values in theory in the analysis:workflows
 entries, so their role is not really clear for me. 
+
 As for the hello engine we are using "hello\_engine" instead of the whole
 genome reseq part. Now it have to be edited manually, go to your project on
 charon-dev, and edit manualy the "Best-practice analysis" item to
 "hello\_engine". Also, see the changes you have to give to your yaml config in
 hello\_engine.yaml (see an example below) .
-
-*Alternative method to change best practice analysis:*
-
-Generally it is the conductor class that decides when to run what (just like in
-an orchestra) and we are pulling the best practice method from charon. To
-change the best practice part, use the code (using your project ID):
-
-    from ngi_pipeline.database.classes import CharonSession, CharonError
-    cs = CharonSession()
-    cs.project_update("P876",best_practice_analysis="hello_engine")
-
 As the engines are independent of the pipeline framework, the only thing that
 is started by ngi\_pipeline is the analyse() function in your engine module.
 This of course have to be written in python, and these functions have to be

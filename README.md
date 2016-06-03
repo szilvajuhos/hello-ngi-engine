@@ -40,7 +40,7 @@ add to your yaml file.
 Once ready, define your NGI\_CONFIG variable (preferably in your shell
 profile, i.e. .bashrc):
 
-    export NGI_CONFIG=/path/to/my/ngi_pipeline/my\_setup.py
+    export NGI_CONFIG=/path/to/my/ngi_pipeline/my\_setup.yaml
 
 #### __Access to charon-dev:__
 

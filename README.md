@@ -4,10 +4,13 @@ Hello GA Engine
 This is a minimal NGI pipeline engine in NextFlow to provide a skeleton for a
 larger engine. Prerequisites:
 
-- nextflow installed: see http://www.nextflow.io/index.html#GetStarted 
+- work either on your laptop, or on milou-b - the latter is the only UPPMAX
+  node that can connect to charon-dev
+- nextflow installed: see http://www.nextflow.io/index.html#GetStarted
+  (installed as module on milou-b)
 - ngi\_pipeline installed (piper is not required for this engine. See
   installation steps below)
-- access to charon-dev
+- access to charon-dev (get an API token)
 - sample sheet and flowcell prepared
 
 #### __Installing NextFlow:__
@@ -40,7 +43,7 @@ add to your yaml file.
 Once ready, define your NGI\_CONFIG variable (preferably in your shell
 profile, i.e. .bashrc):
 
-    export NGI_CONFIG=/path/to/my/ngi_pipeline/my\_setup.yaml
+    export NGI_CONFIG=/path/to/my/ngi_pipeline/my_setup.yaml
 
 #### __Access to charon-dev:__
 
@@ -53,6 +56,17 @@ the environment variables in your .bashrc or shell profile like:
     export CHARON_API_TOKEN=YOUR_TOKEN
     export CHARON_BASE_URL=http://charon.scilifelab.se/
 
+#### __Clone hello-ngi-engine__
+
+From Github get a clone:
+
+    git clone git@github.com:szilvajuhos/hello-ngi-engine.git
+    cd hello-ngi-engine/a2014205/
+
+The directory name a2014205 is needed for some reason to be in the path, so we
+are doing data emulation there. There is a small set of reads in its data
+subdirectory and a corresponding dummy reference.
+
 #### __Sample sheet and flowcell prepared:__
 
 There is a script generating a flowcell structure in
@@ -61,12 +75,12 @@ and it is building all the directory structure and stuff mimicking the
 demultiplexed directory structure of NGI production. Before starting, source the
 NGI conda environment. Its usage:
 
-    (NGI)$ python NGI_pipeline_test.py create  --project-name J.Doe_16_01 --symlinks --FC 1 --fastq1 test_S001_L001_R1_001.fastq.gz --fastq2 test_S001_L001_R2_001.fastq.gz
+    (NGI)$ python /path/to/NGI_pipeline_test.py create  --project-name J.Doe_16_01 --symlinks --FC 1 --fastq1 /full/path/to/hello-ngi-engine/a2014205/data/test_S001_L001_R1_001.fastq.gz --fastq2 /full/path/to/hello-ngi-engine/a2014205/data/test_S001_L001_R2_001.fastq.gz
 
 If you are not satisfied with a test project for some reason, delete it using
 its ID (not by its name):
 
-    (NGI)$ python NGI_pipeline_test.py delete --project-id P836
+    (NGI)$ python /path/to/NGI_pipeline_test.py delete --project-id P836
 
 Formatting is important! Make sure you are naming your project as J.Doe\_16\_01
 (and not J.Doe\_2\_3 or J.Doe\12.3 etc). Furthermore, the file format is in line
